@@ -67,7 +67,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,100,0.8);
+            background: linear-gradient(135deg, #87CEEB 0%, #4682B4 50%, #191970 100%);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -75,6 +75,7 @@
             color: white;
             border-radius: 10px;
             text-align: center;
+            overflow: hidden;
         }
 
         button {
@@ -100,6 +101,37 @@
             font-size: 14px;
             line-height: 1.5;
         }
+
+        #characterCanvas {
+            margin: 20px 0;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 15px;
+            background: rgba(255,255,255,0.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .character-showcase {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 15px 0;
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        .character-item {
+            text-align: center;
+            margin: 0 5px;
+        }
+
+        .character-item span {
+            display: block;
+            font-size: 12px;
+            margin-top: 5px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+        }
     </style>
 </head>
 <body>
@@ -115,9 +147,31 @@
         
         <div id="startScreen">
             <h2>🦦 ラッコキャッチゲーム</h2>
+            
+            <!-- メインキャラクター表示用キャンバス -->
+            <canvas id="characterCanvas" width="300" height="120"></canvas>
+            
+            <div class="character-showcase">
+                <div class="character-item">
+                    <canvas width="30" height="30" id="shellIcon"></canvas>
+                    <span>貝 +10</span>
+                </div>
+                <div class="character-item">
+                    <canvas width="30" height="30" id="fishIcon"></canvas>
+                    <span>魚 +5</span>
+                </div>
+                <div class="character-item">
+                    <canvas width="30" height="30" id="shrimpIcon"></canvas>
+                    <span>エビ +30</span>
+                </div>
+                <div class="character-item">
+                    <canvas width="30" height="30" id="birdIcon"></canvas>
+                    <span>鳥 -15</span>
+                </div>
+            </div>
+            
             <div id="instructions">
-                🐚 貝や魚、エビを集めて得点を稼ごう！<br>
-                🦅 鳥は避けよう（減点）<br><br>
+                🎮 30秒間でできるだけ多くのポイントを集めよう！<br>
                 ⌨️ 操作: 左右矢印キー または マウス
             </div>
             <button onclick="startGame()">ゲームスタート</button>
@@ -522,8 +576,150 @@
             mouseX = 0;
         });
 
+        // キャラクター描画関数
+        function drawOtterOnCanvas(canvas, x, y, scale = 1) {
+            const ctx = canvas.getContext('2d');
+            const width = 50 * scale;
+            const height = 40 * scale;
+
+            // ラッコの描画
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(x, y, width, height);
+
+            // 顔
+            ctx.fillStyle = '#DEB887';
+            ctx.fillRect(x + 5 * scale, y + 5 * scale, width - 10 * scale, height - 10 * scale);
+
+            // 目
+            ctx.fillStyle = '#000';
+            ctx.fillRect(x + 12 * scale, y + 12 * scale, 6 * scale, 6 * scale);
+            ctx.fillRect(x + 32 * scale, y + 12 * scale, 6 * scale, 6 * scale);
+
+            // 鼻
+            ctx.fillStyle = '#FF69B4';
+            ctx.fillRect(x + 22 * scale, y + 20 * scale, 6 * scale, 4 * scale);
+
+            // 手足
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(x - 5 * scale, y + 15 * scale, 10 * scale, 6 * scale);
+            ctx.fillRect(x + width - 5 * scale, y + 15 * scale, 10 * scale, 6 * scale);
+        }
+
+        function drawShellOnCanvas(canvas, x, y, scale = 1) {
+            const ctx = canvas.getContext('2d');
+            const width = 25 * scale;
+            const height = 25 * scale;
+
+            // 可愛い貝のデザイン
+            ctx.fillStyle = '#FFB6C1';
+            ctx.fillRect(x + 2 * scale, y + 4 * scale, width - 4 * scale, height - 8 * scale);
+            
+            ctx.fillStyle = '#FFC0CB';
+            ctx.fillRect(x + 4 * scale, y + 2 * scale, width - 8 * scale, 8 * scale);
+            
+            ctx.fillStyle = '#E6E6FA';
+            ctx.fillRect(x + 6 * scale, y + 8 * scale, width - 12 * scale, height - 14 * scale);
+            
+            ctx.fillStyle = '#FFFAF0';
+            ctx.fillRect(x + 9 * scale, y + 10 * scale, 7 * scale, 7 * scale);
+        }
+
+        function drawFishOnCanvas(canvas, x, y, scale = 1) {
+            const ctx = canvas.getContext('2d');
+            const width = 25 * scale;
+            const height = 25 * scale;
+
+            ctx.fillStyle = '#4169E1';
+            ctx.fillRect(x + 3 * scale, y + 6 * scale, width - 8 * scale, height - 12 * scale);
+            
+            ctx.fillStyle = '#87CEEB';
+            ctx.fillRect(x + 5 * scale, y + 12 * scale, width - 12 * scale, height - 18 * scale);
+            
+            ctx.fillStyle = '#191970';
+            ctx.fillRect(x + 2 * scale, y + 8 * scale, 6 * scale, height - 16 * scale);
+            
+            ctx.fillStyle = '#4169E1';
+            ctx.fillRect(x + width - 6 * scale, y + 4 * scale, 4 * scale, 6 * scale);
+            ctx.fillRect(x + width - 6 * scale, y + 14 * scale, 4 * scale, 6 * scale);
+        }
+
+        function drawShrimpOnCanvas(canvas, x, y, scale = 1) {
+            const ctx = canvas.getContext('2d');
+            const width = 25 * scale;
+            const height = 25 * scale;
+
+            ctx.fillStyle = '#FF4500';
+            ctx.fillRect(x + 4 * scale, y + 6 * scale, width - 8 * scale, height - 12 * scale);
+            
+            ctx.fillStyle = '#FF6347';
+            ctx.fillRect(x + 2 * scale, y + 8 * scale, 8 * scale, height - 16 * scale);
+            
+            ctx.fillStyle = '#FF69B4';
+            ctx.fillRect(x + width - 6 * scale, y + 4 * scale, 4 * scale, 4 * scale);
+            ctx.fillRect(x + width - 6 * scale, y + 10 * scale, 4 * scale, 4 * scale);
+            ctx.fillRect(x + width - 6 * scale, y + 16 * scale, 4 * scale, 4 * scale);
+        }
+
+        function drawBirdOnCanvas(canvas, x, y, scale = 1) {
+            const ctx = canvas.getContext('2d');
+            const width = 25 * scale;
+            const height = 25 * scale;
+
+            ctx.fillStyle = '#DC143C';
+            ctx.fillRect(x + 6 * scale, y + 8 * scale, width - 12 * scale, height - 14 * scale);
+            
+            ctx.fillStyle = '#B22222';
+            ctx.fillRect(x + 8 * scale, y + 4 * scale, width - 16 * scale, 8 * scale);
+            
+            ctx.fillStyle = '#8B0000';
+            ctx.fillRect(x + 2 * scale, y + 10 * scale, 6 * scale, 8 * scale);
+            ctx.fillRect(x + width - 8 * scale, y + 10 * scale, 6 * scale, 8 * scale);
+            
+            ctx.fillStyle = '#FFD700';
+            ctx.fillRect(x + 4 * scale, y + 6 * scale, 4 * scale, 2 * scale);
+        }
+
+        // スタート画面のキャラクター描画
+        function initStartScreen() {
+            const characterCanvas = document.getElementById('characterCanvas');
+            const charCtx = characterCanvas.getContext('2d');
+            
+            // 背景をクリア
+            charCtx.clearRect(0, 0, characterCanvas.width, characterCanvas.height);
+            
+            // メインのラッコを中央に大きく描画
+            drawOtterOnCanvas(characterCanvas, 125, 20, 1.5);
+            
+            // 波エフェクト
+            charCtx.fillStyle = 'rgba(173, 216, 230, 0.6)';
+            for (let i = 0; i < 5; i++) {
+                charCtx.fillRect(i * 60, 90 + Math.sin(Date.now() / 500 + i) * 5, 60, 8);
+            }
+            
+            // 小さなキャラクターアイコンを描画
+            drawShellOnCanvas(document.getElementById('shellIcon'), 2, 2, 1);
+            drawFishOnCanvas(document.getElementById('fishIcon'), 2, 2, 1);
+            drawShrimpOnCanvas(document.getElementById('shrimpIcon'), 2, 2, 1);
+            drawBirdOnCanvas(document.getElementById('birdIcon'), 2, 2, 1);
+        }
+
+        // アニメーション用のフレーム更新
+        function animateStartScreen() {
+            const characterCanvas = document.getElementById('characterCanvas');
+            if (characterCanvas && document.getElementById('startScreen').style.display !== 'none') {
+                initStartScreen();
+                setTimeout(animateStartScreen, 100);
+            }
+        }
+
         // 初期化
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // スタート画面の初期化
+        setTimeout(() => {
+            initStartScreen();
+            animateStartScreen();
+        }, 100);
     </script>
 </body>
 </html>
