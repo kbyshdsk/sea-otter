@@ -116,7 +116,7 @@
         <div id="startScreen">
             <h2>🦦 ラッコキャッチゲーム</h2>
             <div id="instructions">
-                🐚 貝や魚を集めて得点を稼ごう！<br>
+                🐚 貝や魚、エビを集めて得点を稼ごう！<br>
                 🦅 鳥は避けよう（減点）<br><br>
                 ⌨️ 操作: 左右矢印キー または マウス
             </div>
@@ -208,17 +208,20 @@
                 const baseSpeed = 1.5 + speedLevel * 0.8;
                 this.speed = baseSpeed + Math.random() * 1;
                 
-                // アイテムタイプを決定（貝:40%, 魚:40%, 鳥:20%）
+                // アイテムタイプを決定（貝:35%, 魚:35%, 鳥:20%, エビ:10%）
                 const rand = Math.random();
-                if (rand < 0.4) {
+                if (rand < 0.35) {
                     this.type = 'shell';
                     this.points = 10;
-                } else if (rand < 0.8) {
+                } else if (rand < 0.7) {
                     this.type = 'fish';
                     this.points = 5;
-                } else {
+                } else if (rand < 0.9) {
                     this.type = 'bird';
                     this.points = -15;
+                } else {
+                    this.type = 'shrimp';
+                    this.points = 30;
                 }
                 
                 // 鳥の追尾用プロパティ
@@ -226,17 +229,33 @@
             }
 
             update() {
+                const playerCenterX = player.x + player.width / 2;
+                const thisCenterX = this.x + this.width / 2;
+                const distance = playerCenterX - thisCenterX;
+                
                 // 最後の10秒間で鳥がラッコを追尾
                 if (this.type === 'bird' && timeLeft <= 10) {
-                    const playerCenterX = player.x + player.width / 2;
-                    const thisCenterX = this.x + this.width / 2;
-                    const distance = playerCenterX - thisCenterX;
-                    
                     // ラッコに向かって少しずつ移動
                     if (Math.abs(distance) > 5) {
                         this.horizontalSpeed = distance > 0 ? 1.5 : -1.5;
                     } else {
                         this.horizontalSpeed = 0;
+                    }
+                    
+                    this.x += this.horizontalSpeed;
+                    
+                    // 画面外に出ないように制限
+                    if (this.x < 0) this.x = 0;
+                    if (this.x > canvas.width - this.width) this.x = canvas.width - this.width;
+                }
+                
+                // エビはラッコから逃げる動き
+                if (this.type === 'shrimp') {
+                    // ラッコから離れる方向に移動
+                    if (Math.abs(distance) < 80) {
+                        this.horizontalSpeed = distance > 0 ? -1.8 : 1.8;
+                    } else {
+                        this.horizontalSpeed *= 0.95; // 徐々に減速
                     }
                     
                     this.x += this.horizontalSpeed;
@@ -344,6 +363,50 @@
                     ctx.fillStyle = '#FFD700';
                     ctx.fillRect(this.x + 8, this.y + this.height - 4, 2, 3);
                     ctx.fillRect(this.x + 15, this.y + this.height - 4, 2, 3);
+                    
+                } else if (this.type === 'shrimp') {
+                    // エビの詳細デザイン
+                    // エビの体（オレンジ・ピンク）
+                    ctx.fillStyle = '#FF4500';
+                    ctx.fillRect(this.x + 4, this.y + 6, this.width - 8, this.height - 12);
+                    
+                    // エビの頭部（濃いオレンジ）
+                    ctx.fillStyle = '#FF6347';
+                    ctx.fillRect(this.x + 2, this.y + 8, 8, this.height - 16);
+                    
+                    // エビの尻尾（扇形）
+                    ctx.fillStyle = '#FF69B4';
+                    ctx.fillRect(this.x + this.width - 6, this.y + 4, 4, 4);
+                    ctx.fillRect(this.x + this.width - 6, this.y + 10, 4, 4);
+                    ctx.fillRect(this.x + this.width - 6, this.y + 16, 4, 4);
+                    
+                    // エビの脚（細い線）
+                    ctx.fillStyle = '#FFA500';
+                    for (let i = 0; i < 4; i++) {
+                        ctx.fillRect(this.x + 6 + i * 3, this.y + this.height - 6, 1, 4);
+                    }
+                    
+                    // エビの触角
+                    ctx.fillStyle = '#FF4500';
+                    ctx.fillRect(this.x + 1, this.y + 6, 3, 1);
+                    ctx.fillRect(this.x + 1, this.y + 12, 3, 1);
+                    
+                    // エビの目（黒い点）
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(this.x + 4, this.y + 9, 2, 2);
+                    
+                    // エビの体の縞模様
+                    ctx.fillStyle = '#FF6347';
+                    ctx.fillRect(this.x + 6, this.y + 8, this.width - 12, 1);
+                    ctx.fillRect(this.x + 6, this.y + 12, this.width - 12, 1);
+                    ctx.fillRect(this.x + 6, this.y + 16, this.width - 12, 1);
+                    
+                    // 高得点アイテムのキラキラエフェクト
+                    if (Math.floor(Date.now() / 300) % 3 === 0) {
+                        ctx.fillStyle = '#FFFF00';
+                        ctx.fillRect(this.x - 2, this.y + 5, 2, 2);
+                        ctx.fillRect(this.x + this.width, this.y + 15, 2, 2);
+                    }
                 }
             }
 
